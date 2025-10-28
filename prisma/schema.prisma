@@ -1,0 +1,90 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    ADMIN
+    ARTIST
+    USER
+}
+
+model User {
+    id        String   @id @default(cuid())
+    name      String
+    email     String   @unique
+    password  String
+    role      Role     @default(USER)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    artist Artist?
+}
+
+model Artist {
+    id        String   @id @default(cuid())
+    bio       String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    albums Album[]
+    songs  Song[]
+}
+
+model Album {
+    id        String   @id @default(cuid())
+    title     String
+    duration  Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    artistId String
+    artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+    songs Song[]
+}
+
+model Song {
+    id        String   @id @default(cuid())
+    title     String
+    duration  Int
+    audioUrl  String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    artistId String
+    artist   Artist  @relation(fields: [artistId], references: [id], onDelete: Cascade)
+    albumId  String?
+    album    Album?  @relation(fields: [albumId], references: [id], onDelete: SetNull)
+
+    genres SongGenre[]
+}
+
+model Genre {
+    id        String   @id @default(cuid())
+    name      String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    songs SongGenre[]
+}
+
+model SongGenre {
+    id String @id @default(cuid())
+
+    songId String
+    song   Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+    genreId String
+    genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+    @@unique([songId, genreId])
+}
