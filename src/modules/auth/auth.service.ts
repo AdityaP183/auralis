@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, Logger } from "@nestjs/common";
+import {
+    ConflictException,
+    Injectable,
+    Logger,
+    UnauthorizedException,
+} from "@nestjs/common";
 import { RegisterDto } from "./dto/register-user.dto";
 import { LoginDto } from "./dto/login-user.dto";
 import { UserService } from "../user/user.service";
@@ -45,7 +50,52 @@ export class AuthService {
         };
     }
 
-    async login(loginDto: LoginDto) {}
+    async login(loginDto: LoginDto) {
+        const user = await this.userService.getUserByEmail(loginDto.email);
+        if (!user) {
+            throw new ConflictException(
+                "Login Failed! Email or password is incorrect.",
+            );
+        }
 
-    async logout() {}
+        const isPasswordValid = await this.hashService.comparePassword(
+            loginDto.password,
+            user.password,
+        );
+        if (!isPasswordValid) {
+            throw new UnauthorizedException(
+                "Login Failed! Email or password is incorrect.",
+            );
+        }
+
+        const payload = { sub: user.id, email: user.email };
+        const accessToken =
+            await this.tokenService.generateAccessToken(payload);
+
+        this.logger.log(`User ${user.email} logged in.`);
+
+        const { password, ...safeUserData } = user;
+        return { accessToken, user: safeUserData };
+    }
+
+    async logout() {
+        this.logger.log(
+            "Logout endpoint hit. JWT invalidation is client-side.",
+        );
+        return {
+            message:
+                "Successfully logged out. Please discard your token client-side.",
+        };
+    }
+
+    async profile(id: string) {
+        const user = await this.userService.getUserById(id);
+        if (!user) {
+            throw new UnauthorizedException("Invalid or expired token");
+        }
+
+        const { password, ...safeUserData } = user;
+
+        return safeUserData;
+    }
 }
