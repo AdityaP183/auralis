@@ -19,7 +19,4 @@ export class RegisterDto {
     @IsString()
     @IsStrongPassword()
     password: string;
-
-    @IsString()
-    role: string;
 }
