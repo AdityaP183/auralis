@@ -31,12 +31,11 @@ export class AuthService {
             registerDto.password,
         );
 
-        const { password, ...safeUserData } = await this.userService.createUser(
-            {
+        const { password: _password, ...safeUserData } =
+            await this.userService.createUser({
                 ...registerDto,
                 password: hashedPassword,
-            },
-        );
+            });
 
         this.logger.log(`User ${safeUserData.id} created.`);
 
@@ -74,11 +73,11 @@ export class AuthService {
 
         this.logger.log(`User ${user.email} logged in.`);
 
-        const { password, ...safeUserData } = user;
+        const { password: _password, ...safeUserData } = user;
         return { accessToken, user: safeUserData };
     }
 
-    async logout() {
+    logout() {
         this.logger.log(
             "Logout endpoint hit. JWT invalidation is client-side.",
         );
@@ -94,8 +93,6 @@ export class AuthService {
             throw new UnauthorizedException("Invalid or expired token");
         }
 
-        const { password, ...safeUserData } = user;
-
-        return safeUserData;
+        return user;
     }
 }

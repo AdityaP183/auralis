@@ -25,4 +25,6 @@ async function bootstrap() {
 
     await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+bootstrap()
+    .then(() => console.log("Auralis API is running"))
+    .catch((err) => console.error(err));

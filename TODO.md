@@ -7,3 +7,7 @@
 ## Environment Variables
 
 - Add a single source to get environment variables
+
+## Others
+
+- Migrate to prisma v7
