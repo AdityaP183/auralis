@@ -42,7 +42,7 @@ model Artist {
 model Album {
     id        String   @id @default(cuid())
     title     String
-    duration  Int
+    duration  Int?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
